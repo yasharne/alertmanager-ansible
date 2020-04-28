@@ -1,0 +1,8 @@
+---
+- hosts: all
+  gather_facts: yes
+  become: yes
+  roles:
+    - role: global_handlers
+    - role: install_alertmanager
+    - role: config_alertmanager

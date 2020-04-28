@@ -1,0 +1,10 @@
+---
+- name: Copying alertmanager.yml file
+  template:
+    src: alertmanager.yml.j2
+    dest: /etc/alertmanager/alertmanager.yml
+    owner: root
+    group: alertmanager
+    mode: '0740'
+  notify: reload alertmanager
+  tags: ['update_alertmanager_conf']

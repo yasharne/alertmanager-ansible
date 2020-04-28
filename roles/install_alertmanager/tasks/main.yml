@@ -1,0 +1,71 @@
+---
+- name: create alertmanager system group
+  group:
+    name: alertmanager
+    system: true
+    state: present
+
+- name: create alertmanager system user
+  user:
+    name: alertmanager
+    system: true
+    shell: "/usr/sbin/nologin"
+    group: alertmanager
+    createhome: false
+
+- name: Creating alertmanager and amtool config directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: alertmanager
+    mode: 0770
+  with_items:
+    - "/etc/alertmanager"
+    - "/etc/amtool"
+
+- name: create alertmanager data directory
+  file:
+    path: "/var/lib/alertmanager"
+    state: directory
+    owner: alertmanager
+    group: alertmanager
+    mode: 0755
+
+- name: Downloading alertmanager binary files
+  get_url: 
+    url: "https://github.com/prometheus/alertmanager/releases/download/v{{alertmanager_version}}/alertmanager-{{alertmanager_version}}.linux-amd64.tar.gz"
+    dest: "/tmp/alertmanager-{{alertmanager_version}}.linux-amd64.tar.gz"
+  register: download_alertmanager_binary
+  until: download_alertmanager_binary is succeeded
+  retries: 5
+  delay: 2
+
+- name: Extracting alertmanager compressed file
+  unarchive:
+    src: "/tmp/alertmanager-{{alertmanager_version}}.linux-amd64.tar.gz"
+    dest: "/tmp"
+    creates: "/tmp/alertmanager-{{alertmanager_version}}.linux-amd64"
+    remote_src: yes
+
+- name: Copying alertmanager binaries to /usr/local/sbin
+  copy:
+    src: "/tmp/alertmanager-{{alertmanager_version}}.linux-amd64/{{item}}"
+    dest: "/usr/local/sbin/{{item}}"
+    mode: '0755'
+    owner: root
+    group: root
+    remote_src: yes
+  with_items:
+    - alertmanager
+    - amtool
+
+- name: Creating alertmanager SystemD unit
+  template: 
+    src: alertmanager.service.j2
+    dest: /etc/systemd/system/alertmanager.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart alertmanager
+  tags: ['update_systemd_unit']
