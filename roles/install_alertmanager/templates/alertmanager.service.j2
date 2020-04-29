@@ -11,7 +11,8 @@ Group=alertmanager
 ExecReload=/bin/kill -HUP $MAINPID
 ExecStart=/usr/local/sbin/alertmanager \
 --config.file=/etc/alertmanager/alertmanager.yml \
---storage.path=/var/lib/alertmanager
+--storage.path=/var/lib/alertmanager \
+--web.external-url={{alertmanager_external_address}}
 SyslogIdentifier=alertmanager
 Restart=always
 

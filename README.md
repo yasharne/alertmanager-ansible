@@ -15,3 +15,4 @@ You can use vagrant to install this role on both ubuntu and centos:
 
 ## Variables
 - `alertmanager_version`: The version of alertmanager to be installed.
+- `alertmanager_external_address`: The external address which alertmanager is accessible through (HTTP or HTTPS).
